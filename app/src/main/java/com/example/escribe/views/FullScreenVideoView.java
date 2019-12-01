@@ -1,4 +1,4 @@
-package com.example.escribe;
+package com.example.escribe.views;
 
 import android.content.Context;
 import android.util.AttributeSet;
