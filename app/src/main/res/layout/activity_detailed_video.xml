@@ -71,17 +71,19 @@
                                 android:hint="@string/comment_hint"
                                 android:inputType="textWebEditText" />
 
-                            <Button
+                            <TextView
                                 android:id="@+id/send_comment"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginEnd="16dp"
-                                android:layout_marginStart="16dp"
+                                android:layout_marginStart="4dp"
                                 android:text="@string/post"
+                                android:textSize="17sp"
+                                android:textColor="@color/colorUnfocused"
                                 app:layout_constraintBaseline_toBaselineOf="@+id/edit_comment"
                                 app:layout_constraintEnd_toEndOf="parent"
                                 app:layout_constraintHorizontal_bias="0.5"
-                                app:layout_constraintStart_toEndOf="@+id/edit_comment" />
+                                app:layout_constraintStart_toEndOf="@+id/edit_comment"/>
 
                         </androidx.constraintlayout.widget.ConstraintLayout>
 

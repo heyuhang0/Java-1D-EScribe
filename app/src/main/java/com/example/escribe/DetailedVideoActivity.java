@@ -10,6 +10,8 @@ import android.content.Intent;
 import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -110,22 +112,42 @@ public class DetailedVideoActivity extends AppCompatActivity {
         mAdapter = new CommentsAdapter(comments);
         recyclerView.setAdapter(mAdapter);
 
-        Button postCommentButton = findViewById(R.id.send_comment);
+        TextView postCommentButton = findViewById(R.id.send_comment);
         EditText editCommentText = findViewById(R.id.edit_comment);
 
         DatabaseReference commentsRef = database.getReference(slidePath + "/comments");
 
+        editCommentText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) { }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (editCommentText.getText().toString().isEmpty()) {
+                    postCommentButton.setTextColor(getResources().getColor(R.color.colorUnfocused));
+                } else {
+                    postCommentButton.setTextColor(getResources().getColor(R.color.colorAccent));
+                }
+            }
+        });
+
         postCommentButton.setOnClickListener(v -> {
             String comment = editCommentText.getText().toString();
 
-            DatabaseReference newCommentRef = commentsRef.push();
-            newCommentRef.setValue(comment);
+            if (!"".equals(comment)) {
+                DatabaseReference newCommentRef = commentsRef.push();
+                newCommentRef.setValue(comment);
+            }
         });
 
         commentsRef.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
                 String comment = (String) dataSnapshot.getValue();
+
                 comments.add(comment);
                 editCommentText.setText("");
                 mAdapter.notifyItemInserted(comments.size() - 1);
