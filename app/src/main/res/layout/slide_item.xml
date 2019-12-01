@@ -25,6 +25,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/sample_text_long"
+            android:textColor="@color/colorHighEmphasis"
             android:layout_margin="10dp"
             android:maxLines="6"
             android:ellipsize="end"/>

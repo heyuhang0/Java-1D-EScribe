@@ -104,7 +104,8 @@
                         android:layout_height="wrap_content"
                         android:layout_margin="10dp"
                         android:text="@string/sample_text_long"
-                        android:textIsSelectable="true"/>
+                        android:textIsSelectable="true"
+                        android:textColor="@color/colorHighEmphasis"/>
 
                 </androidx.cardview.widget.CardView>
 
@@ -120,7 +121,8 @@
                         android:layout_height="wrap_content"
                         android:layout_margin="10dp"
                         android:text="@string/sample_text_long"
-                        android:textIsSelectable="true"/>
+                        android:textIsSelectable="true"
+                        android:textColor="@color/colorHighEmphasis"/>
 
                 </androidx.cardview.widget.CardView>
 
