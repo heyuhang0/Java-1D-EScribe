@@ -1,6 +1,7 @@
 package com.example.escribe;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -19,8 +20,10 @@ import android.widget.MediaController;
 import android.widget.TextView;
 import android.widget.VideoView;
 
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
@@ -64,7 +67,9 @@ public class DetailedVideoActivity extends AppCompatActivity {
         TextView transcriptView = findViewById(R.id.transcript);
         TextView slideRecognitionView = findViewById(R.id.slide_recognition);
 
-        FirebaseDatabase.getInstance().getReference(slidePath).addValueEventListener(new ValueEventListener() {
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+
+        database.getReference(slidePath).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 ProcessedVideo slide = dataSnapshot.getValue(ProcessedVideo.class);
@@ -98,8 +103,6 @@ public class DetailedVideoActivity extends AppCompatActivity {
         }));
 
         List<String> comments = new ArrayList<>();
-        comments.add("Good video");
-        comments.add("Nice app");
 
         RecyclerView recyclerView = findViewById(R.id.comments_recycler_view);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
@@ -110,12 +113,29 @@ public class DetailedVideoActivity extends AppCompatActivity {
         Button postCommentButton = findViewById(R.id.send_comment);
         EditText editCommentText = findViewById(R.id.edit_comment);
 
+        DatabaseReference commentsRef = database.getReference(slidePath + "/comments");
+
         postCommentButton.setOnClickListener(v -> {
             String comment = editCommentText.getText().toString();
-            comments.add(comment);
-            editCommentText.setText("");
-            mAdapter.notifyItemInserted(comments.size() - 1);
-            recyclerView.smoothScrollToPosition(mAdapter.getItemCount() - 1);
+
+            DatabaseReference newCommentRef = commentsRef.push();
+            newCommentRef.setValue(comment);
+        });
+
+        commentsRef.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                String comment = (String) dataSnapshot.getValue();
+                comments.add(comment);
+                editCommentText.setText("");
+                mAdapter.notifyItemInserted(comments.size() - 1);
+                recyclerView.smoothScrollToPosition(mAdapter.getItemCount() - 1);
+            }
+
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {}
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {}
+            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {}
+            public void onCancelled(@NonNull DatabaseError databaseError) {}
         });
     }
 
