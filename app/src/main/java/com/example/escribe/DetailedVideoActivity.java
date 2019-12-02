@@ -48,6 +48,14 @@ public class DetailedVideoActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detailed_video);
 
+        if (savedInstanceState != null) {
+            videoPosition = savedInstanceState.getInt(STATE_VIDEO_POSITION);
+            videoPlaying = savedInstanceState.getBoolean(STATE_VIDEO_PLAYING);
+        } else {
+            videoPosition = 1;
+            videoPlaying = false;
+        }
+
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
             Objects.requireNonNull(getSupportActionBar()).hide();
@@ -81,14 +89,7 @@ public class DetailedVideoActivity extends AppCompatActivity {
 
                 video.setVideoURI(Uri.parse(slide.getUrl()));
 
-                if (savedInstanceState != null) {
-                    video.seekTo(savedInstanceState.getInt(STATE_VIDEO_POSITION));
-                    if (savedInstanceState.getBoolean(STATE_VIDEO_PLAYING)) {
-                        video.start();
-                    }
-                } else {
-                    video.seekTo(1);
-                }
+                resumeVideo();
             }
 
             @Override
@@ -161,10 +162,27 @@ public class DetailedVideoActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        resumeVideo();
+    }
+
+    private void resumeVideo() {
+        video.seekTo(videoPosition);
+        if (videoPlaying) {
+            video.start();
+        }
+    }
+
+    @Override
     protected void onPause() {
+        saveVideoState();
+        super.onPause();
+    }
+
+    private void saveVideoState() {
         videoPosition = video.getCurrentPosition();
         videoPlaying = video.isPlaying();
-        super.onPause();
     }
 
     @Override
