@@ -28,6 +28,7 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class LessonActivity extends AppCompatActivity {
@@ -63,7 +64,14 @@ public class LessonActivity extends AppCompatActivity {
                 mAdapter.notifyItemInserted(slideList.size() - 1);
             }
 
-            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {}
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                int index = Integer.parseInt(Objects.requireNonNull(dataSnapshot.getKey()));
+                ProcessedVideo updatedSlide = dataSnapshot.getValue(ProcessedVideo.class);
+                slideList.set(index, updatedSlide);
+                mAdapter.notifyItemChanged(index);
+            }
+
             public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {}
             public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {}
             public void onCancelled(@NonNull DatabaseError databaseError) {}
@@ -117,7 +125,10 @@ public class LessonActivity extends AppCompatActivity {
 
             holder.index = position;
             holder.transcriptTextView.setText(slide.getSpeechRecognition());
-            Picasso.get().load(slide.getThumbnail()).into(holder.videoPreview);
+            String videoThumbnailPath = slide.getThumbnail();
+            if (videoThumbnailPath != null && !videoThumbnailPath.isEmpty()) {
+                Picasso.get().load(videoThumbnailPath).into(holder.videoPreview);
+            }
         }
 
         @Override
