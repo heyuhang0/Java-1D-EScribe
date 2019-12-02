@@ -3,12 +3,18 @@ package com.example.escribe;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.SearchManager;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -22,12 +28,14 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class LessonActivity extends AppCompatActivity {
 
-    private RecyclerView.Adapter mAdapter;
+    private SlideAdapter mAdapter;
     private String courseName;
     private String lessonName;
+    List<ProcessedVideo> slideList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,8 +47,6 @@ public class LessonActivity extends AppCompatActivity {
         lessonName = intent.getStringExtra(Util.MESSAGE_LESSON_NAME);
         setTitle(lessonName);
         String coursePath = courseName + "/" + lessonName;
-
-        List<ProcessedVideo> slideList = new ArrayList<>();
 
         RecyclerView recyclerView = findViewById(R.id.slide_list_recycler_view);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
@@ -92,6 +98,11 @@ public class LessonActivity extends AppCompatActivity {
             this.slideList = slideList;
         }
 
+        void setSlideList(List<ProcessedVideo> slideList) {
+            this.slideList = slideList;
+            notifyDataSetChanged();
+        }
+
         @NonNull
         @Override
         public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -113,5 +124,53 @@ public class LessonActivity extends AppCompatActivity {
         public int getItemCount() {
             return slideList.size();
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the options menu from XML
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.options_menu, menu);
+
+        // Get the SearchView and set the searchable configuration
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        SearchView searchView = (SearchView) menu.findItem(R.id.search).getActionView();
+
+        // Assumes current activity is the searchable activity
+        assert searchManager != null;
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+
+        searchView.setQueryHint(getResources().getString(R.string.search_hint));
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newQueryText) {
+                Log.i("LessonActivity", "query text changes to " + newQueryText);
+                if (newQueryText.isEmpty()) {
+                    mAdapter.setSlideList(slideList);
+                } else {
+                    List<ProcessedVideo> filteredSlides = new ArrayList<>();
+                    for (ProcessedVideo v: slideList) {
+                        newQueryText = newQueryText.toLowerCase();
+                        String transcript = v.getSpeechRecognition();
+                        String notes = v.getSlidesRecognition();
+                        if (transcript != null && transcript.toLowerCase().contains(newQueryText)) {
+                            filteredSlides.add(v);
+                        } else if (notes != null && notes.toLowerCase().contains(newQueryText)) {
+                            filteredSlides.add(v);
+                        }
+                    }
+                    mAdapter.setSlideList(filteredSlides);
+                }
+                return false;
+            }
+        });
+
+        return true;
     }
 }
