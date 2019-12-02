@@ -11,7 +11,6 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -29,7 +28,6 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 public class LessonActivity extends AppCompatActivity {
 
@@ -161,7 +159,6 @@ public class LessonActivity extends AppCompatActivity {
 
             @Override
             public boolean onQueryTextChange(String newQueryText) {
-                Log.i("LessonActivity", "query text changes to " + newQueryText);
                 if (newQueryText.isEmpty()) {
                     mAdapter.setSlideList(slideList);
                 } else {
