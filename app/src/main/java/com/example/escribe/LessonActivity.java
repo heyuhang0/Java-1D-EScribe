@@ -28,12 +28,14 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class LessonActivity extends AppCompatActivity {
 
-    private RecyclerView.Adapter mAdapter;
+    private SlideAdapter mAdapter;
     private String courseName;
     private String lessonName;
+    List<ProcessedVideo> slideList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,8 +47,6 @@ public class LessonActivity extends AppCompatActivity {
         lessonName = intent.getStringExtra(Util.MESSAGE_LESSON_NAME);
         setTitle(lessonName);
         String coursePath = courseName + "/" + lessonName;
-
-        List<ProcessedVideo> slideList = new ArrayList<>();
 
         RecyclerView recyclerView = findViewById(R.id.slide_list_recycler_view);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
@@ -98,6 +98,11 @@ public class LessonActivity extends AppCompatActivity {
             this.slideList = slideList;
         }
 
+        void setSlideList(List<ProcessedVideo> slideList) {
+            this.slideList = slideList;
+            notifyDataSetChanged();
+        }
+
         @NonNull
         @Override
         public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -135,15 +140,37 @@ public class LessonActivity extends AppCompatActivity {
         assert searchManager != null;
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
 
-        return true;
-    }
+        searchView.setQueryHint(getResources().getString(R.string.search_hint));
 
-    @Override
-    protected void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
-        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
-            String query = intent.getStringExtra(SearchManager.QUERY);
-            Log.i("LessonActivity", "query:" + query);
-        }
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newQueryText) {
+                Log.i("LessonActivity", "query text changes to " + newQueryText);
+                if (newQueryText.isEmpty()) {
+                    mAdapter.setSlideList(slideList);
+                } else {
+                    List<ProcessedVideo> filteredSlides = new ArrayList<>();
+                    for (ProcessedVideo v: slideList) {
+                        newQueryText = newQueryText.toLowerCase();
+                        String transcript = v.getSpeechRecognition();
+                        String notes = v.getSlidesRecognition();
+                        if (transcript != null && transcript.toLowerCase().contains(newQueryText)) {
+                            filteredSlides.add(v);
+                        } else if (notes != null && notes.toLowerCase().contains(newQueryText)) {
+                            filteredSlides.add(v);
+                        }
+                    }
+                    mAdapter.setSlideList(filteredSlides);
+                }
+                return false;
+            }
+        });
+
+        return true;
     }
 }
