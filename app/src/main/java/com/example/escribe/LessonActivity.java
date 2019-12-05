@@ -58,8 +58,12 @@ public class LessonActivity extends AppCompatActivity {
                 .addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
-                slideList.add(dataSnapshot.getValue(ProcessedVideo.class));
-                mAdapter.notifyItemInserted(slideList.size() - 1);
+                ProcessedVideo video = dataSnapshot.getValue(ProcessedVideo.class);
+                if (video != null) {
+                    video.setKey(dataSnapshot.getKey());
+                    slideList.add(video);
+                    mAdapter.notifyItemInserted(slideList.size() - 1);
+                }
             }
 
             @Override
@@ -84,7 +88,7 @@ public class LessonActivity extends AppCompatActivity {
         class MyViewHolder extends RecyclerView.ViewHolder {
             ImageView videoPreview;
             TextView transcriptTextView;
-            int index;
+            String index;
 
             MyViewHolder(View view) {
                 super(view);
@@ -121,7 +125,7 @@ public class LessonActivity extends AppCompatActivity {
         public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
             ProcessedVideo slide = slideList.get(position);
 
-            holder.index = position;
+            holder.index = slide.getKey();
             holder.transcriptTextView.setText(
                     (slide.getSpeechRecognition().trim() + "\n" + slide.getSlidesRecognition()).trim());
             String videoThumbnailPath = slide.getThumbnail();
