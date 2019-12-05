@@ -122,7 +122,8 @@ public class LessonActivity extends AppCompatActivity {
             ProcessedVideo slide = slideList.get(position);
 
             holder.index = position;
-            holder.transcriptTextView.setText(slide.getSpeechRecognition());
+            holder.transcriptTextView.setText(
+                    (slide.getSpeechRecognition().trim() + "\n" + slide.getSlidesRecognition()).trim());
             String videoThumbnailPath = slide.getThumbnail();
             if (videoThumbnailPath != null && !videoThumbnailPath.isEmpty()) {
                 Picasso.get().load(videoThumbnailPath).into(holder.videoPreview);
