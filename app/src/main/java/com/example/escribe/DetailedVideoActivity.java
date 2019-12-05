@@ -68,7 +68,7 @@ public class DetailedVideoActivity extends AppCompatActivity {
         Intent intent = getIntent();
         String courseName = intent.getStringExtra(Util.MESSAGE_COURSE_NAME);
         String lessonName = intent.getStringExtra(Util.MESSAGE_LESSON_NAME);
-        int slideIndex = intent.getIntExtra(Util.MESSAGE_SLIDE_INDEX, 0);
+        String slideIndex = intent.getStringExtra(Util.MESSAGE_SLIDE_INDEX);
         setTitle(lessonName);
         String slidePath = courseName + "/" + lessonName + "/processedVideos/" + slideIndex;
 

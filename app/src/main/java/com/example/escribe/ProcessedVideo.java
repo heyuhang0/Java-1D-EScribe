@@ -1,6 +1,7 @@
 package com.example.escribe;
 
 public class ProcessedVideo {
+    private String key;
     private String url;
     private String slidesRecognition;
     private String speechRecognition;
@@ -20,5 +21,13 @@ public class ProcessedVideo {
 
     public String getThumbnail() {
         return thumbnail;
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public void setKey(String key) {
+        this.key = key;
     }
 }
