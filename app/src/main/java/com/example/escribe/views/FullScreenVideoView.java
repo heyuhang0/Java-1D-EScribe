@@ -4,6 +4,10 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.VideoView;
 
+/**
+ * Full screen video view
+ * does not shrink and will always occupy parent view
+ */
 public class FullScreenVideoView extends VideoView {
     public FullScreenVideoView(Context context) {
         super(context);

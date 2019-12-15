@@ -32,16 +32,19 @@ public class MainActivity extends AppCompatActivity {
 
         List<String> courseList = new ArrayList<>();
 
+        // Initialize recyclerView
         RecyclerView recyclerView = findViewById(R.id.course_list_recycler_view);
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
         mAdapter = new CourseListAdapter(courseList);
         recyclerView.setAdapter(mAdapter);
 
+        // Initialize Firebase listener
         final FirebaseDatabase database = FirebaseDatabase.getInstance();
         database.getReference().addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                // read course name, which is also key value in Firebase
                 String courseName = dataSnapshot.getKey();
                 assert courseName != null;
 
@@ -50,10 +53,12 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
 
+                // add course name and notify UI to update
                 courseList.add(courseName);
                 mAdapter.notifyItemInserted(courseList.size() - 1);
             }
 
+            // ignore other changes
             public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {}
             public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {}
             public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {}
@@ -71,6 +76,8 @@ public class MainActivity extends AppCompatActivity {
             MyViewHolder(View v) {
                 super(v);
                 textView = v.findViewById(R.id.course_item_text);
+
+                // start corresponding LessonListActivity when user click the view
                 v.setOnClickListener(view -> {
                     Intent intent = new Intent(MainActivity.this, LessonListActivity.class);
                     String message = textView.getText().toString();
@@ -95,6 +102,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
+            // get course name from list and set the textView
             holder.textView.setText(courseList.get(position));
         }
 

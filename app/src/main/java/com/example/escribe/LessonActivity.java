@@ -140,6 +140,9 @@ public class LessonActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * setup search widget in Action Bar
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the options menu from XML
@@ -165,8 +168,10 @@ public class LessonActivity extends AppCompatActivity {
             @Override
             public boolean onQueryTextChange(String newQueryText) {
                 if (newQueryText.isEmpty()) {
+                    // if no texts in search bar, show all slides
                     mAdapter.setSlideList(slideList);
                 } else {
+                    // otherwise create a new filtered list based on query text
                     List<ProcessedVideo> filteredSlides = new ArrayList<>();
                     for (ProcessedVideo v: slideList) {
                         newQueryText = newQueryText.toLowerCase();

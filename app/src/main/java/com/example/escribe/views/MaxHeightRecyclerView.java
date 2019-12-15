@@ -8,6 +8,9 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.escribe.R;
 
+/**
+ * RecyclerView with max height
+ */
 public class MaxHeightRecyclerView extends RecyclerView {
     private int mMaxHeight;
 

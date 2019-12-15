@@ -48,14 +48,17 @@ public class DetailedVideoActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detailed_video);
 
+        // save previous video view states
+        // and later will restore video in onResume()
         if (savedInstanceState != null) {
             videoPosition = savedInstanceState.getInt(STATE_VIDEO_POSITION);
             videoPlaying = savedInstanceState.getBoolean(STATE_VIDEO_PLAYING);
         } else {
-            videoPosition = 1;
+            videoPosition = 1;  // used to show first frame as thumbnail
             videoPlaying = false;
         }
 
+        // make video view full screen when landscape
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
             Objects.requireNonNull(getSupportActionBar()).hide();
@@ -65,6 +68,7 @@ public class DetailedVideoActivity extends AppCompatActivity {
             Objects.requireNonNull(getSupportActionBar()).show();
         }
 
+        // read Firebase path for this video from intent
         Intent intent = getIntent();
         String courseName = intent.getStringExtra(Util.MESSAGE_COURSE_NAME);
         String lessonName = intent.getStringExtra(Util.MESSAGE_LESSON_NAME);
@@ -72,10 +76,12 @@ public class DetailedVideoActivity extends AppCompatActivity {
         setTitle(lessonName);
         String slidePath = courseName + "/" + lessonName + "/processedVideos/" + slideIndex;
 
+        // find views
         video = findViewById(R.id.video);
         TextView transcriptView = findViewById(R.id.transcript);
         TextView slideRecognitionView = findViewById(R.id.slide_recognition);
 
+        // read Firebase and update views
         FirebaseDatabase database = FirebaseDatabase.getInstance();
 
         database.getReference(slidePath).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -98,12 +104,16 @@ public class DetailedVideoActivity extends AppCompatActivity {
             }
         });
 
+        // setup media controller
+        // media controller can not be set once video is ready and view size is confirmed
+        // so listener is used to set the controller
         video.setOnPreparedListener(mp -> mp.setOnVideoSizeChangedListener((mp1, width, height) -> {
             MediaController mc = new MediaController(DetailedVideoActivity.this);
             video.setMediaController(mc);
             mc.setAnchorView(video);
         }));
 
+        // RecyclerView for comments
         List<String> comments = new ArrayList<>();
 
         RecyclerView recyclerView = findViewById(R.id.comments_recycler_view);
@@ -112,11 +122,14 @@ public class DetailedVideoActivity extends AppCompatActivity {
         mAdapter = new CommentsAdapter(comments);
         recyclerView.setAdapter(mAdapter);
 
+        // Views to write and post comment
         TextView postCommentButton = findViewById(R.id.send_comment);
         EditText editCommentText = findViewById(R.id.edit_comment);
 
         DatabaseReference commentsRef = database.getReference(slidePath + "/comments");
 
+        // Update "Post" button color to show whether the comment can be posted
+        // (whether the comment editText is empty)
         editCommentText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
@@ -134,6 +147,7 @@ public class DetailedVideoActivity extends AppCompatActivity {
             }
         });
 
+        // post comments -> push a new String to Firebase
         postCommentButton.setOnClickListener(v -> {
             String comment = editCommentText.getText().toString();
 
@@ -143,6 +157,8 @@ public class DetailedVideoActivity extends AppCompatActivity {
             }
         });
 
+        // insert new comments in Firebase to a list
+        // and notify UI to update
         commentsRef.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
@@ -176,6 +192,9 @@ public class DetailedVideoActivity extends AppCompatActivity {
 
     @Override
     protected void onPause() {
+        // video view states need to be saved before onPause()
+        // otherwise the video will stop itself
+        // so we save states in variables first, and later save them in onSaveInstanceState()
         saveVideoState();
         super.onPause();
     }
@@ -188,10 +207,12 @@ public class DetailedVideoActivity extends AppCompatActivity {
     @Override
     protected void onSaveInstanceState(Bundle savedInstanceState) {
         super.onSaveInstanceState(savedInstanceState);
+        // Save video state so can continue playing after rotation or screen unlocking
         savedInstanceState.putBoolean(STATE_VIDEO_PLAYING, videoPlaying);
         savedInstanceState.putInt(STATE_VIDEO_POSITION, videoPosition);
     }
 
+    // Adapter for comments recyclerView
     class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.MyViewHolder> {
 
         private List<String> comments;
